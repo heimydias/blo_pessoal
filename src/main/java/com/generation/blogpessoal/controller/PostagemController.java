@@ -24,7 +24,7 @@ import com.generation.blogpessoal.repository.TemaRepository;
 
 import jakarta.validation.Valid;
 
-@RestController
+@RestController /*controlador que vai mandar resposta das requisições de determinada consulta*/
 @RequestMapping("/postagens")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class PostagemController {
@@ -37,7 +37,7 @@ public class PostagemController {
 	private TemaRepository temaRepository;
 	
 	
-	@GetMapping
+	@GetMapping /* metodo de consulta */
 	public ResponseEntity<List<Postagem>> getAll(){
 		return ResponseEntity.ok(postagemRepository.findAll());
 		
@@ -66,16 +66,22 @@ public class PostagemController {
 	
 	@PostMapping
 	public ResponseEntity<Postagem> post(@Valid @RequestBody Postagem postagem){
-		return  ResponseEntity.status(HttpStatus.CREATED).body(postagemRepository.save(postagem));
-		
+		return temaRepository.findById(postagem.getTema().getId())
+                .map(resposta -> ResponseEntity.status(HttpStatus.CREATED).body(postagemRepository.save(postagem))) 
+                .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+
 		/*INSERT INTO tb_postagens (data, titulo, texto)
 		VALUES(?, ?, ?)*/
 	}
 
 	@PutMapping
 	public ResponseEntity<Postagem> put(@Valid @RequestBody Postagem postagem){
-		return  ResponseEntity.status(HttpStatus.OK).body(postagemRepository.save(postagem));
-		
+		 return postagemRepository.findById(postagem.getId())
+				 .map(resposta -> temaRepository.findById(postagem.getTema().getId())
+							.map(resposta2 -> ResponseEntity.status(HttpStatus.OK).body(postagemRepository.save(postagem)))
+				      .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()))
+				      .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+		 
 		/*UPDATE tb_postagens SET titulo = ?, texto = ?, data = ? * WHERE id = id*/
 	}
 	
@@ -83,6 +89,8 @@ public class PostagemController {
 	@DeleteMapping("/{id}")
 	public void delete(@PathVariable Long id) {
 		  Optional<Postagem> postagem = postagemRepository.findById(id);
+		  
+		  if(postagem.isPresent())
 		  if(postagem.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 	      postagemRepository.deleteById(id);
 	        
