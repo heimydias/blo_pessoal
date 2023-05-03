@@ -54,7 +54,7 @@ public class UsuarioController {
 				.orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
 	}
 	
-	@PutMapping("/cadastrar")
+	@PutMapping("/atualizar")
 	public ResponseEntity<Usuario> putUsuario(@Valid @RequestBody Usuario usuario){
 		return usuarioService.atualizarUsuario(usuario)
 				.map(resposta -> ResponseEntity.status(HttpStatus.OK).body(resposta))
@@ -62,7 +62,7 @@ public class UsuarioController {
 	}
 	
 	@PostMapping("/logar")
-	public ResponseEntity<UsuarioLogin> loginUsuario(@Valid @RequestBody Optional<UsuarioLogin> usuarioLogin){
+	public ResponseEntity<UsuarioLogin> autenticarUsuario(@Valid @RequestBody Optional<UsuarioLogin> usuarioLogin){
 		return usuarioService.autenticarUsuario(usuarioLogin)
 				.map(resposta -> ResponseEntity.status(HttpStatus.OK).body(resposta))
 				.orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
